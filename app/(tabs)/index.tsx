@@ -1,74 +1,91 @@
-import { Image, StyleSheet, Platform } from 'react-native'
+import React, { useState, useEffect } from 'react'
+import { View, StyleSheet, TouchableOpacity, Text } from 'react-native'
+import { useRouter } from 'expo-router'
+import RestaurantMap from '@/components/RestaurantMap'
+import FilterModal from '@/components/FilterModal'
 
-import { HelloWave } from '@/components/HelloWave'
-import ParallaxScrollView from '@/components/ParallaxScrollView'
-import { ThemedText } from '@/components/ThemedText'
-import { ThemedView } from '@/components/ThemedView'
+// Mock data for restaurants
+const mockRestaurants = [
+  {
+    id: '1',
+    name: 'Pizza Place',
+    latitude: 37.78825,
+    longitude: -122.4324,
+    type: 'Italian',
+    rating: 4.5,
+  },
+  {
+    id: '2',
+    name: 'Taco Spot',
+    latitude: 37.78925,
+    longitude: -122.4344,
+    type: 'Mexican',
+    rating: 4.0,
+  },
+  {
+    id: '3',
+    name: 'Sushi Bar',
+    latitude: 37.78725,
+    longitude: -122.4304,
+    type: 'Japanese',
+    rating: 4.8,
+  },
+]
 
-export default function HomeScreen() {
+export default function MapScreen() {
+  const [restaurants, setRestaurants] = useState(mockRestaurants)
+  const [filters, setFilters] = useState<{
+    type: string | null
+    rating: number | null
+  }>({ type: null, rating: null })
+  const [isFilterModalVisible, setIsFilterModalVisible] = useState(false)
+  const router = useRouter()
+
+  useEffect(() => {
+    // In a real app, you would fetch restaurants from an API here
+    // For now, we'll use the mock data
+  }, [])
+
+  const handleApplyFilters = (newFilters: {
+    type: string | null
+    rating: number | null
+  }) => {
+    setFilters(newFilters)
+  }
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
+    <View style={styles.container}>
+      <RestaurantMap restaurants={restaurants} filters={filters} />
+      <TouchableOpacity
+        style={styles.filterButton}
+        onPress={() => setIsFilterModalVisible(true)}
+      >
+        <Text style={styles.filterButtonText}>Filter</Text>
+      </TouchableOpacity>
+      {isFilterModalVisible && (
+        <FilterModal
+          onApplyFilters={handleApplyFilters}
+          onClose={() => setIsFilterModalVisible(false)}
         />
-      }
-    >
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText>{' '}
-          to see changes. Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({ ios: 'cmd + d', android: 'cmd + m' })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          Tap the Explore tab to learn more about what's included in this
-          starter app.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          When you're ready, run{' '}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText>{' '}
-          to get a fresh <ThemedText type="defaultSemiBold">app</ThemedText>{' '}
-          directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+      )}
+    </View>
   )
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+  container: {
+    flex: 1,
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
+  filterButton: {
     position: 'absolute',
+    top: 40,
+    right: 20,
+    backgroundColor: '#007AFF',
+    padding: 10,
+    borderRadius: 5,
+  },
+  filterButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
   },
 })
