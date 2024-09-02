@@ -4,47 +4,22 @@ import { useRouter } from 'expo-router'
 import RestaurantMap from '@/components/RestaurantMap'
 import FilterModal from '@/components/FilterModal'
 
-// Mock data for restaurants
-const mockRestaurants = [
-  {
-    id: '1',
-    name: 'Pizza Place',
-    latitude: 37.78825,
-    longitude: -122.4324,
-    type: 'Italian',
-    rating: 4.5,
-  },
-  {
-    id: '2',
-    name: 'Taco Spot',
-    latitude: 37.78925,
-    longitude: -122.4344,
-    type: 'Mexican',
-    rating: 4.0,
-  },
-  {
-    id: '3',
-    name: 'Sushi Bar',
-    latitude: 37.78725,
-    longitude: -122.4304,
-    type: 'Japanese',
-    rating: 4.8,
-  },
-]
+export interface Restaurant {
+  id: string
+  name: string
+  latitude: number
+  longitude: number
+  type: string
+  rating: number
+}
 
 export default function MapScreen() {
-  const [restaurants, setRestaurants] = useState(mockRestaurants)
   const [filters, setFilters] = useState<{
     type: string | null
     rating: number | null
   }>({ type: null, rating: null })
   const [isFilterModalVisible, setIsFilterModalVisible] = useState(false)
   const router = useRouter()
-
-  useEffect(() => {
-    // In a real app, you would fetch restaurants from an API here
-    // For now, we'll use the mock data
-  }, [])
 
   const handleApplyFilters = (newFilters: {
     type: string | null
@@ -55,7 +30,7 @@ export default function MapScreen() {
 
   return (
     <View style={styles.container}>
-      <RestaurantMap restaurants={restaurants} filters={filters} />
+      <RestaurantMap filters={filters} />
       <TouchableOpacity
         style={styles.filterButton}
         onPress={() => setIsFilterModalVisible(true)}
