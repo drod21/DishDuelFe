@@ -1,5 +1,13 @@
-import React, { useMemo } from 'react'
-import { View, StyleSheet, Platform, SafeAreaView } from 'react-native'
+import React, { useMemo, useState } from 'react'
+import {
+  View,
+  StyleSheet,
+  Platform,
+  SafeAreaView,
+  Modal,
+  Text,
+  Button,
+} from 'react-native'
 import MapView, {
   Marker,
   PROVIDER_DEFAULT,
@@ -7,6 +15,10 @@ import MapView, {
 } from 'react-native-maps'
 import { useFetchRestaurants } from '@/hooks/useFetchRestaurants'
 import { useUserLocationStore } from '@/app/store/UserLocationStore'
+import {
+  selectedRestaurantsStore,
+  Restaurant as SelectedRestaurant,
+} from '@/app/store/SelectedRestaurantsStore'
 
 export interface Restaurant {
   id: string
@@ -30,6 +42,9 @@ export default function RestaurantMap({ filters }: RestaurantMapProps) {
     ? location.userLocation
     : location.defaultCoordinates
   const restaurants = useFetchRestaurants()
+  const [selectedRestaurant, setSelectedRestaurant] =
+    useState<Restaurant | null>(null)
+  const [modalVisible, setModalVisible] = useState(false)
 
   const filteredRestaurants = useMemo(() => {
     return (
@@ -42,9 +57,19 @@ export default function RestaurantMap({ filters }: RestaurantMapProps) {
     )
   }, [restaurants, filters])
 
-  const handleMarkerPress = (restaurantId: string) => {
-    // TODO: handle this
-    // router.push(``);
+  const handleMarkerPress = (restaurant: Restaurant) => {
+    console.log(val.type)
+    setSelectedRestaurant(restaurant)
+    setModalVisible(true)
+  }
+
+  const handleConfirmAdd = () => {
+    if (selectedRestaurant) {
+      selectedRestaurantsStore.setState((state) => ({
+        selectedRestaurants: [...state.selectedRestaurants, selectedRestaurant],
+      }))
+      setModalVisible(false)
+    }
   }
 
   return (
@@ -73,10 +98,26 @@ export default function RestaurantMap({ filters }: RestaurantMapProps) {
               }}
               title={restaurant.name}
               description={`Type: ${restaurant.type}, Rating: ${restaurant.rating}`}
-              onPress={() => handleMarkerPress(restaurant.id)}
+              onPress={(_val) => handleMarkerPress(restaurant)}
             />
           ))}
         </MapView>
+        {selectedRestaurant && (
+          <Modal
+            animationType="slide"
+            transparent={true}
+            visible={modalVisible}
+            onRequestClose={() => setModalVisible(false)}
+          >
+            <View style={styles.modalView}>
+              <Text style={styles.modalText}>{selectedRestaurant.name}</Text>
+              <Text>Type: {selectedRestaurant.type}</Text>
+              <Text>Rating: {selectedRestaurant.rating}</Text>
+              <Button title="Add to Duel List" onPress={handleConfirmAdd} />
+              <Button title="Cancel" onPress={() => setModalVisible(false)} />
+            </View>
+          </Modal>
+        )}
       </View>
     </SafeAreaView>
   )
@@ -92,5 +133,24 @@ const styles = StyleSheet.create({
   map: {
     width: '100%',
     height: '100%',
+  },
+  modalView: {
+    margin: 20,
+    backgroundColor: 'white',
+    borderRadius: 20,
+    padding: 35,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  modalText: {
+    marginBottom: 15,
+    textAlign: 'center',
   },
 })

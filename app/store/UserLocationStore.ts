@@ -1,7 +1,5 @@
 import { useStore } from '@tanstack/react-store'
 import { Store } from '@tanstack/store'
-import { useEffect } from 'react'
-import * as Location from 'expo-location'
 
 const latitudeDelta = 0.0922
 const longitudeDelta = 0.0421
