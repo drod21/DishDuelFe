@@ -67,8 +67,8 @@ export default function RestaurantMap({ filters }: RestaurantMapProps) {
       selectedRestaurantsStore.setState((state) => ({
         selectedRestaurants: [...state.selectedRestaurants, selectedRestaurant],
       }))
-      setModalVisible(false)
     }
+    setModalVisible(false)
   }
 
   return (
