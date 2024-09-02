@@ -58,7 +58,6 @@ export default function RestaurantMap({ filters }: RestaurantMapProps) {
   }, [restaurants, filters])
 
   const handleMarkerPress = (restaurant: Restaurant) => {
-    console.log(val.type)
     setSelectedRestaurant(restaurant)
     setModalVisible(true)
   }
