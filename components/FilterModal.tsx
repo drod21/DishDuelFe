@@ -7,30 +7,42 @@ interface FilterModalProps {
   onApplyFilters: (filters: {
     type: string | null
     rating: number | null
+    rank: string | null
   }) => void
   onClose: () => void
 }
 
+const ranks = [
+  'All',
+  'Unranked',
+  'Bronze',
+  'Silver',
+  'Gold',
+  'Platinum',
+  'Diamond',
+  'Quartz',
+]
+const restaurantTypes = [
+  'All',
+  'Italian',
+  'Mexican',
+  'Chinese',
+  'Japanese',
+  'American',
+]
 export default function FilterModal({
   onApplyFilters,
   onClose,
 }: FilterModalProps) {
   const [selectedType, setSelectedType] = useState<string | null>(null)
   const [selectedRating, setSelectedRating] = useState<number | null>(null)
-
-  const restaurantTypes = [
-    'All',
-    'Italian',
-    'Mexican',
-    'Chinese',
-    'Japanese',
-    'American',
-  ]
+  const [selectedRank, setSelectedRank] = useState<string | null>(null)
 
   const handleApplyFilters = () => {
     onApplyFilters({
       type: selectedType === 'All' ? null : selectedType,
       rating: selectedRating,
+      rank: selectedRank === 'All' ? null : selectedRank,
     })
     onClose()
   }
@@ -62,6 +74,17 @@ export default function FilterModal({
       <Text style={styles.ratingText}>
         {selectedRating ? selectedRating.toFixed(1) : 'Any'}
       </Text>
+
+      <Text style={styles.label}>Minimum Rank</Text>
+      <Picker
+        selectedValue={selectedRank}
+        onValueChange={(itemValue) => setSelectedRank(itemValue)}
+        style={styles.picker}
+      >
+        {ranks.map((rank) => (
+          <Picker.Item key={rank} label={rank} value={rank} />
+        ))}
+      </Picker>
 
       <View style={styles.buttonContainer}>
         <TouchableOpacity style={styles.button} onPress={handleApplyFilters}>

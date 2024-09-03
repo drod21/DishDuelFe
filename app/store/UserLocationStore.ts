@@ -19,11 +19,25 @@ const defaultCoordinates: Coordinates = {
 }
 
 export const store = new Store({
+  coordinates: defaultCoordinates,
   defaultCoordinates,
   userCoordinates: {} as Coordinates,
   canUseUserLocation: false,
 })
+const setCanUseUserLocation = (canUseUserLocation: boolean) => {
+  store.setState((state) => ({ ...state, canUseUserLocation }))
+}
 
+const setUserLocation = (location: Coordinates) => {
+  store.setState((state) => ({
+    ...state,
+    userLocation: location,
+  }))
+}
+
+const setCoordinates = (location: Coordinates) => {
+  store.setState((state) => ({ ...state, coordinates: location }))
+}
 export const useUserLocationStore = () => {
   const userLocation = useStore(store, (state) => state.userCoordinates)
   const defaultCoordinates = useStore(
@@ -34,16 +48,11 @@ export const useUserLocationStore = () => {
     store,
     (state) => state.canUseUserLocation,
   )
-  const setCanUseUserLocation = (canUseUserLocation: boolean) => {
-    store.setState((state) => ({ ...state, canUseUserLocation }))
-  }
-
-  const setUserLocation = (location: Coordinates) => {
-    store.setState((state) => ({ ...state, userLocation: location }))
-  }
 
   return {
+    coordinates: useStore(store, (state) => state.coordinates),
     canUseUserLocation,
+    setCoordinates,
     userLocation,
     defaultCoordinates,
     setUserLocation,

@@ -1,10 +1,7 @@
+import { Restaurant } from '@/app/store/SelectedRestaurantsStore'
 import { FlatList, View, Text, StyleSheet } from 'react-native'
-
-interface Restaurant {
-  id: string
-  name: string
-  mmr: number
-}
+import { ThemedView } from './ThemedView'
+import { ThemedText } from './ThemedText'
 
 const RestaurantList = ({ restaurants }: { restaurants: Restaurant[] }) => {
   return (
@@ -12,10 +9,10 @@ const RestaurantList = ({ restaurants }: { restaurants: Restaurant[] }) => {
       data={restaurants}
       keyExtractor={(item: Restaurant) => item.id}
       renderItem={({ item }: { item: Restaurant }) => (
-        <View style={styles.item}>
-          <Text style={styles.name}>{item.name}</Text>
-          <Text style={styles.mmr}>MMR: {item.mmr}</Text>
-        </View>
+        <ThemedView style={styles.item}>
+          <ThemedText style={styles.name}>{item.name}</ThemedText>
+          <ThemedText style={styles.mmr}>MMR: {item.mmr}</ThemedText>
+        </ThemedView>
       )}
     />
   )

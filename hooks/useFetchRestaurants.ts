@@ -1,17 +1,9 @@
+import { Restaurant } from '@/app/store/SelectedRestaurantsStore'
 import {
   Coordinates,
   useUserLocationStore,
 } from '@/app/store/UserLocationStore'
 import { useQuery } from '@tanstack/react-query'
-
-export interface Restaurant {
-  id: string
-  name: string
-  latitude: number
-  longitude: number
-  type: string
-  rating: number
-}
 
 const fetchNearbyRestaurants = async (location: {
   latitude: number
@@ -46,7 +38,7 @@ export const useFetchRestaurants = () => {
   const location = useUserLocationStore()
   const loc = location.canUseUserLocation
     ? location.userLocation
-    : location.defaultCoordinates
+    : location.coordinates
 
   return useQuery({
     queryKey: queryKey(loc),

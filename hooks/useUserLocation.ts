@@ -33,11 +33,11 @@ export const useRequestLocation = () => {
 }
 
 const requestLocation = async (): Promise<Coordinates> => {
-  let location = await Location.getCurrentPositionAsync({})
+  let location = await Location.getLastKnownPositionAsync({})
 
   return {
-    latitude: location.coords.latitude,
-    longitude: location.coords.longitude,
+    latitude: location?.coords?.latitude ?? defaultCoordinates.latitude,
+    longitude: location?.coords?.longitude ?? defaultCoordinates.longitude,
     latitudeDelta: defaultCoordinates.latitudeDelta,
     longitudeDelta: defaultCoordinates.longitudeDelta,
   }
@@ -48,8 +48,7 @@ export const useUserLocation = () => {
 
   const query = useQuery({
     queryKey,
-    queryFn: requestLocation,
-    enabled: userLocationStore.canUseUserLocation,
+    queryFn: () => requestLocation(),
   })
 
   if (query.status === 'success') {
