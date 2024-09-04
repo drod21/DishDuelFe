@@ -6,7 +6,6 @@ import {
   useUserLocationStore,
 } from '@/app/store/UserLocationStore'
 import { Platform } from 'react-native'
-import { useEffect } from 'react'
 
 const defaultCoordinates = {
   latitude: 37.78825,
@@ -22,7 +21,10 @@ export const getUserLocationPermissions = async () => {
     await Location.requestForegroundPermissionsAsync()
   if (foregroundStatus === 'granted' && Platform.OS === 'android') {
     const { status } = await Location.requestBackgroundPermissionsAsync()
-    return status || foregroundStatus
+
+    return status === Location.PermissionStatus.GRANTED
+      ? status
+      : foregroundStatus
   }
 
   return foregroundStatus
