@@ -53,7 +53,6 @@ export const useUserLocation = () => {
     queryKey,
     queryFn: requestLocation,
   })
-  const locationStore = useUserLocationStore()
 
   if (query.data && query.data.latitude && query.data.longitude) {
     store.batch(() => {
