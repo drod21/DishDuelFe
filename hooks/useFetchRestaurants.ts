@@ -36,12 +36,9 @@ const queryKey = (loc: Coordinates) => ['restaurants', loc]
 
 export const useFetchRestaurants = () => {
   const location = useUserLocationStore()
-  const loc = location.canUseUserLocation
-    ? location.userLocation
-    : location.coordinates
 
   return useQuery({
-    queryKey: queryKey(loc),
-    queryFn: () => fetchNearbyRestaurants(loc),
+    queryKey: queryKey(location.coordinates),
+    queryFn: () => fetchNearbyRestaurants(location.coordinates),
   })
 }

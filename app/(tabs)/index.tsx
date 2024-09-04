@@ -1,4 +1,4 @@
-import React, { useState, useRef, Suspense } from 'react'
+import React, { useState, useRef, Suspense, useCallback } from 'react'
 import {
   View,
   StyleSheet,
@@ -14,11 +14,12 @@ import { Icon } from 'react-native-elements'
 import { RestaurantDetails } from '@/components/RestaurantDetails'
 import {
   Restaurant,
-  useCurrentSelectedRestaurant,
   useDetailsPanelState,
-  useSelectedRestaurants,
 } from '../store/SelectedRestaurantsStore'
 import RestaurantMap from '@/components/RestaurantMap'
+import { useCurrentSelectedRestaurant } from '@/hooks/useCurrentSelectedRestaurant'
+import { useSelectedRestaurants } from '@/hooks/useSelectedRestaurants'
+import { useUserLocation } from '@/hooks/useUserLocation'
 
 export default function MapScreen() {
   const [filters, setFilters] = useState<{
@@ -28,6 +29,7 @@ export default function MapScreen() {
   }>({ type: null, rating: null, rank: null })
   const [isFilterModalVisible, setIsFilterModalVisible] = useState(false)
   const [searchVisible, setSearchVisible] = useState(true)
+  const userLocationQuery = useUserLocation()
   const locationStore = useUserLocationStore()
   const slideAnim = useRef(new Animated.Value(-300)).current
   const { selectedRestaurant, setSelectedRestaurant } =
@@ -84,6 +86,13 @@ export default function MapScreen() {
     handleClosePanel()
   }
 
+  const handleCenterOnUser = async () => {
+    const loc = await userLocationQuery.refetch()
+    if (loc.data) {
+      locationStore.setCoordinates(loc.data)
+    }
+  }
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
@@ -112,6 +121,12 @@ export default function MapScreen() {
           onPress={() => setSearchVisible(!searchVisible)}
         >
           <Icon color="white" name="search" size={30} />
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.centerIcon}
+          onPress={handleCenterOnUser}
+        >
+          <Icon color="white" name="my-location" size={30} />
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.filterIcon}
@@ -179,6 +194,12 @@ const styles = StyleSheet.create({
     marginHorizontal: 10,
   },
   searchIcon: {
+    position: 'absolute',
+    bottom: 130,
+    right: 10,
+    zIndex: 2,
+  },
+  centerIcon: {
     position: 'absolute',
     bottom: 80,
     right: 10,

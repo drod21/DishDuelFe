@@ -1,18 +1,19 @@
-import React, { forwardRef, useImperativeHandle, useMemo, useRef } from 'react'
-import { View, StyleSheet, Platform, SafeAreaView } from 'react-native'
+import React, { useMemo } from 'react'
 import MapView, {
   Marker,
   PROVIDER_DEFAULT,
   PROVIDER_GOOGLE,
   Region,
 } from 'react-native-maps'
-import { useFetchRestaurants } from '@/hooks/useFetchRestaurants'
+import { View, StyleSheet, Platform, SafeAreaView } from 'react-native'
 import { useUserLocationStore } from '@/app/store/UserLocationStore'
 import {
   Restaurant,
   useDetailsPanelState,
-  useSelectedRestaurants,
 } from '@/app/store/SelectedRestaurantsStore'
+import { useSelectedRestaurants } from '@/hooks/useSelectedRestaurants'
+import { useFetchRestaurants } from '@/hooks/useFetchRestaurants'
+import { useDebounce } from '@/hooks/useDebounce'
 
 interface RestaurantMapProps {
   filters: {
@@ -33,11 +34,9 @@ const RestaurantMap = ({
   const { selectedRestaurants } = useSelectedRestaurants()
   const { detailsPanelState } = useDetailsPanelState()
 
-  const mapRegion = location.canUseUserLocation
-    ? location.userLocation
-    : location.coordinates
-
+  const mapRegion = location.coordinates
   const restaurants = useFetchRestaurants()
+  const debouncedRefetch = useDebounce(restaurants.refetch, 300)
 
   const filteredRestaurants = useMemo(() => {
     return (
@@ -51,6 +50,15 @@ const RestaurantMap = ({
     )
   }, [restaurants, filters])
 
+  const onRegionChangeComplete = (region: Region) => {
+    location.setCoordinates({
+      latitude: region.latitude,
+      longitude: region.longitude,
+      latitudeDelta: region.latitudeDelta,
+      longitudeDelta: region.longitudeDelta,
+    })
+  }
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
@@ -63,8 +71,13 @@ const RestaurantMap = ({
           }
           style={styles.map}
           region={mapRegion}
+          onRegionChangeComplete={onRegionChangeComplete}
         >
-          <Marker coordinate={mapRegion} title="You are here" pinColor="blue" />
+          <Marker
+            coordinate={location.userLocation}
+            title="You are here"
+            pinColor="blue"
+          />
           {filteredRestaurants.map((restaurant) => (
             <Marker
               key={restaurant.id}
