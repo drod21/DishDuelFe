@@ -32,6 +32,7 @@ const setUserLocation = (location: Coordinates) => {
   store.setState((state) => ({
     ...state,
     userLocation: location,
+    coordinates: location,
   }))
 }
 

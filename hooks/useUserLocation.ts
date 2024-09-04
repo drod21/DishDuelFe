@@ -5,6 +5,7 @@ import {
   store,
   useUserLocationStore,
 } from '@/app/store/UserLocationStore'
+import { Platform } from 'react-native'
 import { useEffect } from 'react'
 
 const defaultCoordinates = {
@@ -16,23 +17,19 @@ const defaultCoordinates = {
 export const locationReqKey = ['getPermission']
 export const queryKey = ['userLocation']
 
-export const useRequestLocation = () => {
-  useEffect(() => {}, [])
-  const query = useQuery({
-    queryKey: locationReqKey,
-    queryFn: async () => {
-      const { status } = await Location.requestForegroundPermissionsAsync()
+export const getUserLocationPermissions = async () => {
+  const { status: foregroundStatus } =
+    await Location.requestForegroundPermissionsAsync()
+  if (foregroundStatus === 'granted' && Platform.OS === 'android') {
+    const { status } = await Location.requestBackgroundPermissionsAsync()
+    return status || foregroundStatus
+  }
 
-      return status
-    },
-  })
-
-  return query
+  return foregroundStatus
 }
 
-const requestLocation = async (
-  permissionStatus?: 'granted' | 'undetermined' | 'denied',
-): Promise<Coordinates> => {
+export const requestLocation = async (): Promise<Coordinates> => {
+  const permissionStatus = await getUserLocationPermissions()
   if (permissionStatus !== 'granted') {
     return defaultCoordinates
   }
@@ -40,25 +37,32 @@ const requestLocation = async (
   let location = await Location.getCurrentPositionAsync()
 
   const userLocation = {
-    latitude: location?.coords?.latitude,
-    longitude: location?.coords?.longitude,
+    latitude: location.coords.latitude,
+    longitude: location.coords.longitude,
     latitudeDelta: defaultCoordinates.latitudeDelta,
     longitudeDelta: defaultCoordinates.longitudeDelta,
   }
-  store.setState((prev) => ({ ...prev, userCoordinates: userLocation }))
 
   return userLocation
 }
 
 export const useUserLocation = () => {
-  const { data } = useRequestLocation()
-  console.log(data)
   const query = useQuery({
     queryKey,
-    queryFn: () => requestLocation(data),
-    enabled: data != null && data === Location.PermissionStatus.GRANTED,
-    placeholderData: defaultCoordinates,
+    queryFn: requestLocation,
   })
+  const locationStore = useUserLocationStore()
+
+  if (query.data && query.data.latitude && query.data.longitude) {
+    store.batch(() => {
+      store.setState((prev) => ({
+        ...prev,
+        coordinates: query.data,
+        userCoordinates: query.data,
+        canUseUserLocation: true,
+      }))
+    })
+  }
 
   return query
 }

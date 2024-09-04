@@ -3,11 +3,9 @@ import React from 'react'
 import { TabBarIcon } from '@/components/navigation/TabBarIcon'
 import { Colors } from '@/constants/Colors'
 import { useColorScheme } from '@/hooks/useColorScheme'
-import { useRequestLocation } from '@/hooks/useUserLocation'
 
 export default function TabLayout() {
   const colorScheme = useColorScheme()
-  const reqLocation = useRequestLocation()
 
   return (
     <Tabs

@@ -11,11 +11,18 @@ const fetchNearbyRestaurants = async (location: {
 }) => {
   // Replace YOUR_API_KEY with your actual Google Places API key
   const apiKey = 'AIzaSyBBMKGfb1xBTwVhbyxGYlKyZL5dAmCcO20'
-  const url = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${location.latitude},${location.longitude}&radius=1500&type=restaurant&key=${apiKey}`
+  const params = new URLSearchParams({
+    location: `${location.latitude},${location.longitude}`,
+    key: apiKey,
+    keyword: 'restaurant',
+    type: 'restaurant',
+    radius: '1000',
+  })
+  const url = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?${params.toString()}`
 
   try {
     const response = await fetch(url)
-    const data = await response.json()
+    const data = (await response.json()) as { results: Restaurant[] }
     if (data.results) {
       const newRestaurants: Restaurant[] = data.results.map((place: any) => ({
         id: place.place_id,
@@ -23,7 +30,8 @@ const fetchNearbyRestaurants = async (location: {
         latitude: place.geometry.location.lat,
         longitude: place.geometry.location.lng,
         type: place.types[0],
-        rating: place.rating || 0,
+        address: place.vicinity,
+        rating: place.rating ?? 0,
       }))
       return newRestaurants
     }

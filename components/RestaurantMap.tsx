@@ -1,11 +1,17 @@
-import React, { useMemo } from 'react'
+import React, { Suspense, useMemo } from 'react'
 import MapView, {
   Marker,
   PROVIDER_DEFAULT,
   PROVIDER_GOOGLE,
   Region,
 } from 'react-native-maps'
-import { View, StyleSheet, Platform, SafeAreaView } from 'react-native'
+import {
+  View,
+  StyleSheet,
+  Platform,
+  SafeAreaView,
+  ActivityIndicator,
+} from 'react-native'
 import { useUserLocationStore } from '@/app/store/UserLocationStore'
 import {
   Restaurant,
@@ -36,7 +42,15 @@ const RestaurantMap = ({
 
   const mapRegion = location.coordinates
   const restaurants = useFetchRestaurants()
-  const debouncedRefetch = useDebounce(restaurants.refetch, 300)
+
+  const onRegionChangeComplete = useDebounce((region: Region) => {
+    location.setCoordinates({
+      latitude: region.latitude,
+      longitude: region.longitude,
+      latitudeDelta: region.latitudeDelta,
+      longitudeDelta: region.longitudeDelta,
+    })
+  }, 300)
 
   const filteredRestaurants = useMemo(() => {
     return (
@@ -50,54 +64,47 @@ const RestaurantMap = ({
     )
   }, [restaurants, filters])
 
-  const onRegionChangeComplete = (region: Region) => {
-    location.setCoordinates({
-      latitude: region.latitude,
-      longitude: region.longitude,
-      latitudeDelta: region.latitudeDelta,
-      longitudeDelta: region.longitudeDelta,
-    })
-  }
-
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <View style={styles.container}>
-        <MapView
-          onPress={(_e) => {
-            detailsPanelState === 'open' ? handleClosePanel() : null
-          }}
-          provider={
-            Platform.OS === 'android' ? PROVIDER_GOOGLE : PROVIDER_DEFAULT
-          }
-          style={styles.map}
-          region={mapRegion}
-          onRegionChangeComplete={onRegionChangeComplete}
-        >
-          <Marker
-            coordinate={location.userLocation}
-            title="You are here"
-            pinColor="blue"
-          />
-          {filteredRestaurants.map((restaurant) => (
+    <Suspense fallback={<ActivityIndicator />}>
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.container}>
+          <MapView
+            onPress={(_e) => {
+              detailsPanelState === 'open' ? handleClosePanel() : null
+            }}
+            provider={
+              Platform.OS === 'android' ? PROVIDER_GOOGLE : PROVIDER_DEFAULT
+            }
+            style={styles.map}
+            region={mapRegion}
+            onRegionChangeComplete={onRegionChangeComplete}
+          >
             <Marker
-              key={restaurant.id}
-              coordinate={{
-                latitude: restaurant.latitude,
-                longitude: restaurant.longitude,
-              }}
-              title={restaurant.name}
-              description={`Type: ${restaurant.type}, Rating: ${restaurant.rating}`}
-              onPress={() => onRestaurantSelect(restaurant)}
-              pinColor={
-                selectedRestaurants.some((r) => r.id === restaurant.id)
-                  ? 'green'
-                  : 'red'
-              }
+              coordinate={location.userLocation}
+              title="You are here"
+              pinColor="blue"
             />
-          ))}
-        </MapView>
-      </View>
-    </SafeAreaView>
+            {filteredRestaurants.map((restaurant) => (
+              <Marker
+                key={restaurant.id}
+                coordinate={{
+                  latitude: restaurant.latitude,
+                  longitude: restaurant.longitude,
+                }}
+                title={restaurant.name}
+                description={`Type: ${restaurant.type}, Rating: ${restaurant.rating}`}
+                onPress={() => onRestaurantSelect(restaurant)}
+                pinColor={
+                  selectedRestaurants.some((r) => r.id === restaurant.id)
+                    ? 'green'
+                    : 'red'
+                }
+              />
+            ))}
+          </MapView>
+        </View>
+      </SafeAreaView>
+    </Suspense>
   )
 }
 
